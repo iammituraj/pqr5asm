@@ -8,4 +8,4 @@ It supports all 37 base instructions and a set of pseudo/custom instructions.
 All codes are fully tested. All are open-source codes, free to use, modify and distribute without any conflicts of interest with the original developer.
 
 # Developer
-Mitu Raj, chipmunklogic.com, chip@chipmunklogic.com
+Mitu Raj, [Chipmunk Logic](https://chipmunklogic.com), chip@chipmunklogic.com
