@@ -17,7 +17,16 @@
 #                       -- Custom/Pseudo instructions  (ref. pqr5asm Instruction Manual for full list)
 #                    -- Doesn't support FENCE and CSR instructions.
 #                    -- Supports ABI acronyms (ref. pqr5asm Instruction Manual for more details)
-#                    -- Input = assembly code file, Output = binary/hex code files (ascii)
+#                    -- Input = assembly code file, Output = binary/hex code files (.txt/.bin)
+#                       // .bin file format (byte sequence in BIG ENDIAN):
+#                          <0xF0F0F0F0>  // preamble
+#                          <Program size in bytes (= no. of instructions * 4 bytes)>
+#                          <PC base address[3][2][1][0]>
+#                          <instruction[0] byte[3][2][1][0]>
+#                          <instruction[1] byte[3][2][1][0]>
+#                          <...>
+#                          <0xE0E0E0E0>  // postamble
+#                       // bin and hex code files are also dumped as ASCII .txt files
 #                    -- One instruction per line, semicolon optional.
 #                    -- Base address of program (initial PC) can be defined in the first line of program.
 #                       for eg: .ORIGIN 0x4000 
@@ -49,7 +58,7 @@
 #                       // Binary/Hex code files are generated in same path
 #                       // If no arguments provided, source file = sample.s in current directory
 #
-# Last modified on : Mar-2023
+# Last modified on : Jan-2024
 # Compatiblility   : Python 3.9 tested
 #
 # Copyright        : Open-source license, see developer.txt.
@@ -91,6 +100,34 @@ def print_welcome():
     print('|~~~~~~~~ RISC-V Assembler ~~~~~~~~~|')
     print('|/////// O P E N S O U R C E ///////|')
     print('+===================================+')
+
+
+# Function to dump .bin file
+def write2bin(pgmsize, baddr, dbytearray, binfile):
+    # Insert preamble 0xF0F0F0F0
+    dbytearray.insert(0, int("11110000", 2))
+    dbytearray.insert(1, int("11110000", 2))
+    dbytearray.insert(2, int("11110000", 2))
+    dbytearray.insert(3, int("11110000", 2))
+    # Insert program size
+    pgmsize_bytearray = pgmsize.to_bytes(4, 'big')
+    dbytearray.insert(4, pgmsize_bytearray[0])
+    dbytearray.insert(5, pgmsize_bytearray[1])
+    dbytearray.insert(6, pgmsize_bytearray[2])
+    dbytearray.insert(7, pgmsize_bytearray[3])
+    # Insert PC base address
+    baddr_bytearray = baddr.to_bytes(4, 'big')
+    dbytearray.insert(8, baddr_bytearray[0])
+    dbytearray.insert(9, baddr_bytearray[1])
+    dbytearray.insert(10, baddr_bytearray[2])
+    dbytearray.insert(11, baddr_bytearray[3])
+    # Insert postamble 0xE0E0E0E0
+    dbytearray.append(int("11100000", 2))
+    dbytearray.append(int("11100000", 2))
+    dbytearray.append(int("11100000", 2))
+    dbytearray.append(int("11100000", 2))
+    # Write to bin file
+    binfile.write(dbytearray)
 
 
 # Function to print code in ascii
@@ -1038,14 +1075,16 @@ print_welcome()
 # Decode from command line arguments
 try:
     f_src_path = sys.argv[1]
+    f_des_path_bintext = sys.argv[1].rstrip('.s') + '_bin.txt'
+    f_des_path_hextext = sys.argv[1].rstrip('.s') + '_hex.txt'
     f_des_path_bin = sys.argv[1].rstrip('.s') + '.bin'
-    f_des_path_hex = sys.argv[1].rstrip('.s') + '.hex'
 except:
     # Default parameters
     print('| INFO : No arguments/unsupported arguments, proceeding with default files...')
     f_src_path = './sample.s'
+    f_des_path_bintext = './sample_bin.txt'
+    f_des_path_hextext = './sample_hex.txt'
     f_des_path_bin = './sample.bin'
-    f_des_path_hex = './sample.hex'
 
 # Open assembly file in read mode and store as 2D string array (list [line][char])
 try:
@@ -1168,13 +1207,29 @@ if error_flag[0] == 0:
     print('\n|| SUCCESS ||\nSuccessfully parsed the assembly code and converted to binary code...')
     gen_instr_hex(instr_bin, instr_hex)
     try:
-        # Binary file write
-        f_des = open(f_des_path_bin, "w")
+        # Binary text file write
+        f_des = open(f_des_path_bintext, "w")
+        f_desbin = open(f_des_path_bin, "wb")
+        binary_data = bytearray()
         for line in instr_bin:
             f_des.write(line + '\n')
+            dbyte3 = line[0:8]
+            dbyte2 = line[8:16]
+            dbyte1 = line[16:24]
+            dbyte0 = line[24:32]
+            binary_data.append(int(dbyte3, 2))
+            binary_data.append(int(dbyte2, 2))
+            binary_data.append(int(dbyte1, 2))
+            binary_data.append(int(dbyte0, 2))
+        # Dump .bin file
+        instr_totalsize_bytes = instrcnt[0] * 4
+        write2bin(instr_totalsize_bytes, baseaddr, binary_data, f_desbin)
         print('\n|| SUCCESS ||\nSuccessfully written to Binary code file...')
-        # Hex file write
-        f_des = open(f_des_path_hex, "w")
+        f_des.close()
+        f_desbin.close()
+
+        # Hex text file write
+        f_des = open(f_des_path_hextext, "w")
         for line in instr_hex:
             f_des.write(line + '\n')
         print('\n|| SUCCESS ||\nSuccessfully written to Hex code file...')
