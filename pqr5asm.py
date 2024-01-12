@@ -19,18 +19,19 @@
 #                    -- Supports ABI acronyms (ref. pqr5asm Instruction Manual for more details)
 #                    -- Input = assembly code file, Output = binary/hex code files (.txt/.bin)
 #                       // .bin file format (byte sequence in BIG ENDIAN):
-#                          <0xF0F0F0F0>  // preamble
+#                          <0xF0F0F0F0>  // pre-amble
 #                          <Program size in bytes (= no. of instructions * 4 bytes)>
 #                          <PC base address[3][2][1][0]>
 #                          <instruction[0] byte[3][2][1][0]>
 #                          <instruction[1] byte[3][2][1][0]>
 #                          <...>
-#                          <0xE0E0E0E0>  // postamble
+#                          <0xE0E0E0E0>  // post-amble
 #                       // bin and hex code files are also dumped as ASCII .txt files
 #                    -- One instruction per line, semicolon optional.
-#                    -- Base address of program (initial PC) can be defined in the first line of program.
+#                    -- Base address of program (PC of first instruction) can be defined in the first line of program.
 #                       for eg: .ORIGIN 0x4000 
 #                       If not provided, overridden to 0x00000000
+#                       Binary file will be generated to target this address on the instruction memory to store instructions
 #                    -- Supports <space>, <comma>, and <linebreak> as delimiters for eg:
 #                                                                              LUI x5 255 <linebreak>
 #                                                                              LUI x5, 255 <linebreak>
@@ -104,7 +105,7 @@ def print_welcome():
 
 # Function to dump .bin file
 def write2bin(pgmsize, baddr, dbytearray, binfile):
-    # Insert preamble 0xF0F0F0F0
+    # Insert pre-amble 0xF0F0F0F0
     dbytearray.insert(0, int("11110000", 2))
     dbytearray.insert(1, int("11110000", 2))
     dbytearray.insert(2, int("11110000", 2))
@@ -121,7 +122,7 @@ def write2bin(pgmsize, baddr, dbytearray, binfile):
     dbytearray.insert(9, baddr_bytearray[1])
     dbytearray.insert(10, baddr_bytearray[2])
     dbytearray.insert(11, baddr_bytearray[3])
-    # Insert postamble 0xE0E0E0E0
+    # Insert post-amble 0xE0E0E0E0
     dbytearray.append(int("11100000", 2))
     dbytearray.append(int("11100000", 2))
     dbytearray.append(int("11100000", 2))
