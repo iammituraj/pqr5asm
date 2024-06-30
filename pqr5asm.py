@@ -31,7 +31,7 @@
 #                    -- Base address of program (PC of first instruction) can be defined in the first line of program.
 #                       for eg: .ORIGIN 0x4000 
 #                       If not provided, overridden to 0x00000000
-#                       Binary file will be generated to target this address on the instruction memory to store instructions
+#                       Binary file will be generated to target this address on the instr. memory to store instructions
 #                    -- Supports <space>, <comma>, and <linebreak> as delimiters for eg:
 #                                                                              LUI x5 255 <linebreak>
 #                                                                              LUI x5, 255 <linebreak>
@@ -54,12 +54,15 @@
 #                                                                          ADD x1, x1, x2
 #                       -- Label is case-sensitive
 #                       -- Pre-processor will assign pc-relative address to label
+#                    -- Immediate value supports ascii characters for instructions like MVI, LI
+#                       For eg: LI r0, 'A'  # Loads 0x41 to r0 register
+#                       Supports '\n', '\r', and all 7-bit ascii characters from 0x20 to 0x7E.
 #                    -- Invoking the script from terminal:
 #                       python pqr5asm.py '<source file path>'
 #                       // Binary/Hex code files are generated in same path
 #                       // If no arguments provided, source file = sample.s in current directory
 #
-# Last modified on : Jan-2024
+# Last modified on : June-2024
 # Compatiblility   : Python 3.9 tested
 #
 # Copyright        : Open-source license, see developer.txt.
@@ -156,6 +159,222 @@ def print_label_table(labelcnt, label_list, label_addr_list):
     for i in range(labelcnt[0]):
         print('| %+-8s' % label_list[i], ": 0x{:08x}".format(label_addr_list[i]))
     print('+-----------------------------')
+
+
+# Function to parse string arguments and convert to hex
+def char2hex(char):
+    if char == ' ':
+        return '0x20'
+    elif char == '!':
+        return '0x21'
+    elif char == '"':
+        return '0x22'
+    elif char == '#':
+        return '0x23'
+    elif char == '$':
+        return '0x24'
+    elif char == '%':
+        return '0x25'
+    elif char == '&':
+        return '0x26'
+    elif char == "'":
+        return '0x27'
+    elif char == '(':
+        return '0x28'
+    elif char == ')':
+        return '0x29'
+    elif char == '*':
+        return '0x2A'
+    elif char == '+':
+        return '0x2B'
+    elif char == ',':
+        return '0x2C'
+    elif char == '-':
+        return '0x2D'
+    elif char == '.':
+        return '0x2E'
+    elif char == '/':
+        return '0x2F'
+    elif char == '0':
+        return '0x30'
+    elif char == '1':
+        return '0x31'
+    elif char == '2':
+        return '0x32'
+    elif char == '3':
+        return '0x33'
+    elif char == '4':
+        return '0x34'
+    elif char == '5':
+        return '0x35'
+    elif char == '6':
+        return '0x36'
+    elif char == '7':
+        return '0x37'
+    elif char == '8':
+        return '0x38'
+    elif char == '9':
+        return '0x39'
+    elif char == ':':
+        return '0x3A'
+    elif char == ';':
+        return '0x3B'
+    elif char == '<':
+        return '0x3C'
+    elif char == '=':
+        return '0x3D'
+    elif char == '>':
+        return '0x3E'
+    elif char == '?':
+        return '0x3F'
+    elif char == '@':
+        return '0x40'
+    elif char == 'A':
+        return '0x41'
+    elif char == 'B':
+        return '0x42'
+    elif char == 'C':
+        return '0x43'
+    elif char == 'D':
+        return '0x44'
+    elif char == 'E':
+        return '0x45'
+    elif char == 'F':
+        return '0x46'
+    elif char == 'G':
+        return '0x47'
+    elif char == 'H':
+        return '0x48'
+    elif char == 'I':
+        return '0x49'
+    elif char == 'J':
+        return '0x4A'
+    elif char == 'K':
+        return '0x4B'
+    elif char == 'L':
+        return '0x4C'
+    elif char == 'M':
+        return '0x4D'
+    elif char == 'N':
+        return '0x4E'
+    elif char == 'O':
+        return '0x4F'
+    elif char == 'P':
+        return '0x50'
+    elif char == 'Q':
+        return '0x51'
+    elif char == 'R':
+        return '0x52'
+    elif char == 'S':
+        return '0x53'
+    elif char == 'T':
+        return '0x54'
+    elif char == 'U':
+        return '0x55'
+    elif char == 'V':
+        return '0x56'
+    elif char == 'W':
+        return '0x57'
+    elif char == 'X':
+        return '0x58'
+    elif char == 'Y':
+        return '0x59'
+    elif char == 'Z':
+        return '0x5A'
+    elif char == '[':
+        return '0x5B'
+    elif char == '\\':
+        return '0x5C'
+    elif char == ']':
+        return '0x5D'
+    elif char == '^':
+        return '0x5E'
+    elif char == '_':
+        return '0x5F'
+    elif char == '`':
+        return '0x60'
+    elif char == 'a':
+        return '0x61'
+    elif char == 'b':
+        return '0x62'
+    elif char == 'c':
+        return '0x63'
+    elif char == 'd':
+        return '0x64'
+    elif char == 'e':
+        return '0x65'
+    elif char == 'f':
+        return '0x66'
+    elif char == 'g':
+        return '0x67'
+    elif char == 'h':
+        return '0x68'
+    elif char == 'i':
+        return '0x69'
+    elif char == 'j':
+        return '0x6A'
+    elif char == 'k':
+        return '0x6B'
+    elif char == 'l':
+        return '0x6C'
+    elif char == 'm':
+        return '0x6D'
+    elif char == 'n':
+        return '0x6E'
+    elif char == 'o':
+        return '0x6F'
+    elif char == 'p':
+        return '0x70'
+    elif char == 'q':
+        return '0x71'
+    elif char == 'r':
+        return '0x72'
+    elif char == 's':
+        return '0x73'
+    elif char == 't':
+        return '0x74'
+    elif char == 'u':
+        return '0x75'
+    elif char == 'v':
+        return '0x76'
+    elif char == 'w':
+        return '0x77'
+    elif char == 'x':
+        return '0x78'
+    elif char == 'y':
+        return '0x79'
+    elif char == 'z':
+        return '0x7A'
+    elif char == '{':
+        return '0x7B'
+    elif char == '|':
+        return '0x7C'
+    elif char == '}':
+        return '0x7D'
+    elif char == '~':
+        return '0x7E'
+    elif char == '\\n':
+        return '0x0A'
+    elif char == '\\r':
+        return '0x0D'
+    else:
+        return '#ERR'
+
+
+# Function to parse string arguments and convert to hex
+def parseascii(arg):
+    if arg:
+        s = arg[0]
+        parts = s.split("'")
+        if ((len(parts) == 3 and len(parts[1]) == 1) or
+            ((len(parts) == 3 and len(parts[1]) == 2) and (parts[1] == '\\n' or parts[1] == '\\r'))):
+            arghex = char2hex(parts[1])
+            parseascii_succ[0] = True
+            if arghex != "#ERR":
+                modified_expr = parts[0] + arghex + parts[2]
+                arg[0] = modified_expr
+            else:
+                arg[0] = arg
 
 
 # Function to generate hex instructions from binary instructions
@@ -1127,22 +1346,33 @@ for l in code_text:
         # Ignore blank line and move on
         continue
     # Could be valid instruction, check if second argument has immediate expression 'x(y)', replace it by: 'y x'
+    # Also check if ascii char exists, parse and replace it with equivalent hex
+    parseascii_succ = [False]
     try:
-        arg2 = words[1]
-        arg2 = arg2.split('#', 2)  # Separate inline comment
-        len_arg2 = len(arg2)
+        arg2wc = words[1]
+        arg2wc = arg2wc.split('#', 2)  # Separate inline comment if any
+        len_arg2wc = len(arg2wc)
+        arg2 = [arg2wc[0]]
+        parseascii(arg2)
         arg2pp = arg2[0].replace(')', '(')
         arg2pp = "".join(arg2pp.split())
         arg2list = arg2pp.split('(')
-        if len_arg2 == 2:  # If inline comment is there
-            words[1] = ' '+ arg2list[1] + ', ' + arg2list[0] + ' '+ '#' + arg2[1]  # Modified expression
-        else:
+        if len_arg2wc == 2:  # If inline comment is there
+            words[1] = ' ' + arg2list[1] + ', ' + arg2list[0] + ' ' + '#' + arg2wc[1]  # Modified expression
+        else:  # No inline comment
             words[1] = ' ' + arg2list[1] + ', ' + arg2list[0]  # Modified expression
         code_text_pre1.append(",".join(words))  # Write line with modified expression
     except:
-        code_text_pre1.append(l)
-        # Ignore irrelevant line and move on
+        if parseascii_succ[0]:  # Some ascii char was possibly parsed...
+            if len_arg2wc == 2:  # If inline comment is there
+                words[1] = arg2[0] + ' ' + '#' + arg2wc[1]  # Modified expression
+            else:
+                words[1] = arg2[0]  # Modified expression
+            code_text_pre1.append(",".join(words))  # Write line with modified expression
+        else:  # No ascii char was parsed...
+            code_text_pre1.append(l)
         continue
+
 
 # Pre-process code line-by-line: STEP2: Remove all commas, re-format with single space
 code_text_pre2 = []
