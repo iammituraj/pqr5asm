@@ -99,7 +99,7 @@ reglist = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6',
 # Function to print welcome message
 def print_welcome():
     print('+===================================+')
-    print('|      Chipmunk Logic (TM) 2022     |')
+    print('|      Chipmunk Logic (TM) 2024     |')
     print('+===================================+')
     print('|~~~~~~~~ RISC-V Assembler ~~~~~~~~~|')
     print('|/////// O P E N S O U R C E ///////|')
