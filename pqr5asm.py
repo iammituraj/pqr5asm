@@ -608,6 +608,14 @@ def is_invalid_reg(reg):
 
 # Function to check if a label is valid or not
 def is_valid_label(lbl, isjbinstr=False):
+    if lbl in label_list:
+        is_text_label[0] = True
+    else:
+        is_text_label[0] = False
+    if lbl in dlabel_list:
+        is_data_label[0] = True
+    else:
+        is_data_label[0] = False
     if not isjbinstr:  # Not Jump/Branch instruction's label
         if (lbl in label_list) or (lbl in dlabel_list):
             return 1
@@ -618,7 +626,6 @@ def is_valid_label(lbl, isjbinstr=False):
             return 1
         else:
             return 0
-
 
 
 # Function to convert register (x0-x31) to its binary code
@@ -1142,7 +1149,7 @@ def int2bin(num):
 
 
 # Function to convert an immediate/offset to 32 binary and return status
-def imm2bin(immval, linenum, errsts, jbflag, laflag):
+def imm2bin(immval, linenum, errsts, jbflag, laflag, jaflag):
     try:
         # Integer literal
         if int(immval) < 0:
@@ -1162,24 +1169,38 @@ def imm2bin(immval, linenum, errsts, jbflag, laflag):
             # Label --> translation --> pc relative addr for j/b-type instructions
             elif jbflag == 1 and is_valid_label(immval.rstrip(':'), True):
                 addr_of_label_int = addr_of_label(immval, labelid)
-                pc_reltv_addr_int = addr_of_label_int - pc[0]  # pc relative addr
+                pc_reltv_addr_int = addr_of_label_int - pc[0]  # PC relative addr
                 if pc_reltv_addr_int < 0:
-                    pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # pc relative addr 2's complement
-                immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # pc relative addr signed 32-bit
+                    pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # PC relative addr 2's complement
+                immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # PC relative addr signed 32-bit
                 return immval_bin
-            # Label --> translation --> absolute address for la instruction
-            elif laflag == 1 and (pcrel_flag is False) and is_valid_label(immval.rstrip(':')):
+            # Label --> translation --> la instruction
+            elif laflag == 1 and is_valid_label(immval.rstrip(':')):
+                if (pcrel_flag is True) and is_text_label[0]:  # PC relative address for la instruction
+                    addr_of_label_int = addr_of_label(immval, labelid)
+                    pc_reltv_addr_int = addr_of_label_int - pc[0]  # PC relative addr
+                    if pc_reltv_addr_int < 0:
+                        pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # PC relative addr 2's complement
+                    immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # PC relative addr signed 32-bit
+                    return immval_bin
+                else:    # Absolute address for la instruction if referring to data symbol or pcrel_flag not set
+                    addr_of_label_int = addr_of_label(immval, labelid)
+                    abs_addr_int = addr_of_label_int
+                    immval_bin = '{:032b}'.format(abs_addr_int, base=16)  # Absolute addr signed 32-bit
+                    return immval_bin            
+            # Label --> translation --> absolute address for ja instruction
+            elif jaflag == 1 and (pcrel_flag is False) and is_valid_label(immval.rstrip(':'), True):
                 addr_of_label_int = addr_of_label(immval, labelid)
                 abs_addr_int = addr_of_label_int
                 immval_bin = '{:032b}'.format(abs_addr_int, base=16)  # Absolute addr signed 32-bit
                 return immval_bin
-            # Label --> translation --> PC relative address for la instruction
-            elif laflag == 1 and (pcrel_flag is True) and is_valid_label(immval.rstrip(':')):
+            # Label --> translation --> PC relative address for ja instruction
+            elif jaflag == 1 and (pcrel_flag is True) and is_valid_label(immval.rstrip(':'), True):
                 addr_of_label_int = addr_of_label(immval, labelid)
-                pc_reltv_addr_int = addr_of_label_int - pc[0]  # pc relative addr
+                pc_reltv_addr_int = addr_of_label_int - pc[0]  # PC relative addr
                 if pc_reltv_addr_int < 0:
-                    pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # pc relative addr 2's complement
-                immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # pc relative addr signed 32-bit
+                    pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # PC relative addr 2's complement
+                immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # PC relative addr signed 32-bit
                 return immval_bin
             else:
                 print("| ERROR: Invalid immediate/offset value or label at line no: ", linenum)
@@ -1260,6 +1281,10 @@ def parse_hi_lo(line):
 
 # Function to parse assembly code line to binary
 def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
+    # Reset global flags
+    is_text_label[0] = False
+    is_data_label[0] = False
+
     instr_error_flag = 0
     # Parse %hi() %lo() if any, and replace by equivalent 20-bit and 12-bit hexa immediate
     #line = parse_hi_lo(line)
@@ -1286,6 +1311,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
         opcode = element[0]
     except:
         print("| FATAL: Instruction at line no: ", linenum, " is missing opcode!\n")
+        instr_error_flag = 1
+        error_flag[0] = 1
         error_cnt[0] = error_cnt[0] + 1
         return 2
 
@@ -1439,6 +1466,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1458,6 +1487,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1477,6 +1508,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1496,6 +1529,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1514,6 +1549,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1534,6 +1571,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1554,6 +1593,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1580,6 +1621,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1600,6 +1643,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1620,6 +1665,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1640,6 +1687,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1660,6 +1709,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1680,6 +1731,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1700,6 +1753,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1719,6 +1774,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1739,6 +1796,8 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
                 error_flag[0] = 1
         except:
             print("| FATAL: Instruction at line no: ", linenum, " is missing one or more operands!\n")
+            instr_error_flag = 1
+            error_flag[0] = 1
             error_cnt[0] = error_cnt[0] + 1
             return 2
 
@@ -1750,7 +1809,7 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
     # Decode immediate/offset
     errsts = [0]
     if r_type_flag == 0:  # Ignore only if r-type instruction
-        imm_bin = imm2bin(imm, linenum, errsts, (j_type_flag or b_type_flag), (ps_la_type_flag or ps_ja_type_flag))
+        imm_bin = imm2bin(imm, linenum, errsts, (j_type_flag or b_type_flag), ps_la_type_flag, ps_ja_type_flag)
 
     # Check if immediate values flagged error on parsing
     if errsts[0] == 1:
@@ -1956,42 +2015,44 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
         imm_bin_11_0 = imm_bin[20:32]  # imm[11:0]
         funct3 = '000'
         instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction
-    elif instr_error_flag == 0 and ((ps_la_type_flag or ps_ja_type_flag) and pcrel_flag is False):  # = LUI + ADDI
-        # LUI
+    elif instr_error_flag == 0 and ps_la_type_flag:  # = LUI/AUIPC + ADDI
+        if (pcrel_flag is True) and is_text_label[0]:
+            opcode0 = opcode_binarr[0]  # No need to modify opcode, AUIPC
+        else:
+            opcode0 = '0110111'  # Modify opcode to LUI if referring to data symbol or pcrel_flag not set or immediate address
+        # LUI or AUIPC
         if imm_bin[20] == '0':
             imm_bin_31_12 = imm_bin[0:20]  # imm[31:12]
         else:
             intval = int(imm_bin[0:20], base=2) + 1
-            imm_bin_lui = int2bin(intval)
-            imm_bin_31_12 = imm_bin_lui[12:32]  # imm[31:12] + 1
-        instr_bin.append(imm_bin_31_12 + rdt_bin + opcode_binarr[0])  # Write LUI instruction
+            imm_bin_lui_or_auipc = int2bin(intval)
+            imm_bin_31_12 = imm_bin_lui_or_auipc[12:32]  # imm[31:12] + 1
+        instr_bin.append(imm_bin_31_12 + rdt_bin + opcode0)  # Write LUI/AUIPC instruction
         # ADDI
         imm_bin_11_0 = imm_bin[20:32]  # imm[11:0]
         funct3 = '000'
-        instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction
-        if ps_ja_type_flag:
-            # JALR x0, rs1, 0
-            imm_bin_11_0 = '000000000000'  # imm[11:0] = 0
-            funct3 = '000'
-            instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + '00000' + opcode_binarr[2])
-    elif instr_error_flag == 0 and ((ps_la_type_flag or ps_ja_type_flag) and pcrel_flag is True):  # = AUIPC + ADDI
-        # AUIPC
+        instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction                 
+    elif instr_error_flag == 0 and ps_ja_type_flag:  # = LUI/AUIPC + ADDI + JALR
+        if (pcrel_flag is True) and is_text_label[0]:
+            opcode0 = opcode_binarr[0]  # No need to modify opcode, AUIPC
+        else:
+            opcode0 = '0110111'  # Modify opcode to LUI if referring to data symbol or pcrel_flag not set or immediate address
+        # LUI or AUIPC
         if imm_bin[20] == '0':
             imm_bin_31_12 = imm_bin[0:20]  # imm[31:12]
         else:
             intval = int(imm_bin[0:20], base=2) + 1
-            imm_bin_auipc = int2bin(intval)
-            imm_bin_31_12 = imm_bin_auipc[12:32]  # imm[31:12] + 1
-        instr_bin.append(imm_bin_31_12 + rdt_bin + opcode_binarr[0])  # Write AUIPC instruction
+            imm_bin_lui_or_auipc = int2bin(intval)
+            imm_bin_31_12 = imm_bin_lui_or_auipc[12:32]  # imm[31:12] + 1
+        instr_bin.append(imm_bin_31_12 + rdt_bin + opcode0)  # Write AUIPC instruction
         # ADDI
         imm_bin_11_0 = imm_bin[20:32]  # imm[11:0]
         funct3 = '000'
-        instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction
-        if ps_ja_type_flag:
-            # JALR x0, rs1, 0
-            imm_bin_11_0 = '000000000000'  # imm[11:0] = 0
-            funct3 = '000'
-            instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + '00000' + opcode_binarr[2])
+        instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction        
+        # JALR x0, rs1, 0
+        imm_bin_11_0 = '000000000000'  # imm[11:0] = 0
+        funct3 = '000'
+        instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + '00000' + opcode_binarr[2])
     elif instr_error_flag == 0 and (ps_jr_type_flag):  # = JALR
         imm_bin_11_0 = imm_bin[20:32]  # imm[11:0]
         funct3 = '000'
@@ -2200,6 +2261,8 @@ label_addr_list = []
 instrcnt = [0]
 exp_instrcnt = [0]
 labelcnt = [0]
+is_text_label = [False]
+is_data_label = [False]
 
 dlabel_list = []
 dlabel_addr_list = []
