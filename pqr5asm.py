@@ -16,17 +16,8 @@
 #                       -- 37 base instructions (ref. pqr5asm Instruction Manual for full list)
 #                       -- Custom/Pseudo instructions  (ref. pqr5asm Instruction Manual for full list)
 #                    -- Doesn't support FENCE and CSR instructions.
-#                    -- Supports ABI acronyms (ref. pqr5asm Instruction Manual for more details)
 #                    -- Input = assembly code file, Output = binary/hex code files (.txt/.bin)
-#                       // .bin file format (byte sequence in BIG ENDIAN):
-#                          <0xF0F0F0F0>  // pre-amble
-#                          <Program size in bytes (= no. of instructions * 4 bytes)>
-#                          <PC base address[3][2][1][0]>
-#                          <instruction[0] byte[3][2][1][0]>
-#                          <instruction[1] byte[3][2][1][0]>
-#                          <...>
-#                          <0xE0E0E0E0>  // post-amble
-#                       // bin and hex code files are also dumped as ASCII .txt files
+#                    -- Supports ABI acronyms (ref. pqr5asm Instruction Manual for more details)
 #                    -- Only one instruction per line.
 #                    -- Supports .section .text for text (instructions) segment and .section .data for data/bss segment
 #                       -- .section .text is mandatory.
@@ -141,12 +132,18 @@ def print_welcome():
 
 
 # Function to dump .bin file
-def write2bin(datsize, baddr, dbytearray, binfile):
-    # Insert pre-amble 0xF0F0F0F0
-    dbytearray.insert(0, int("11110000", 2))  #MSB
-    dbytearray.insert(1, int("11110000", 2))
-    dbytearray.insert(2, int("11110000", 2))
-    dbytearray.insert(3, int("11110000", 2))
+def write2bin(datsize, baddr, dbytearray, binfile, memtype):
+    # Insert pre-amble 0xC0C0C0C0 (IMEM) / 0xD0D0D0D0 (DMEM)
+    if memtype == 1:  # DMEM
+        dbytearray.insert(0, int("11010000", 2))  #MSB
+        dbytearray.insert(1, int("11010000", 2))
+        dbytearray.insert(2, int("11010000", 2))
+        dbytearray.insert(3, int("11010000", 2))
+    else:  # IMEM
+        dbytearray.insert(0, int("11000000", 2))  #MSB
+        dbytearray.insert(1, int("11000000", 2))
+        dbytearray.insert(2, int("11000000", 2))
+        dbytearray.insert(3, int("11000000", 2))
     # Insert program size
     datsize_bytearray = datsize.to_bytes(4, 'big')
     dbytearray.insert(4, datsize_bytearray[0])  #MSB
@@ -2406,7 +2403,7 @@ if error_flag[0] == 0:
         # Write to .bin file
         f_desbin = open(f_des_path_imem_bin, "wb")
         imem_bytecnt = instrcnt[0] * 4
-        write2bin(imem_bytecnt, baseaddr, imem_binary_data, f_desbin)
+        write2bin(imem_bytecnt, baseaddr, imem_binary_data, f_desbin, 0)
         print('\n|| SUCCESS ||\nSuccessfully written to IMEM Binary code file...')
         f_desbin.close()
 
@@ -2430,7 +2427,7 @@ if error_flag[0] == 0:
         # Write to .bin file
         f_desbin = open(f_des_path_dmem_bin, "wb")
         dmem_binary_data_temp = dmem_binary_data.copy()
-        write2bin(dmem_bytecnt[0], data_baseaddr[0], dmem_binary_data_temp, f_desbin)
+        write2bin(dmem_bytecnt[0], data_baseaddr[0], dmem_binary_data_temp, f_desbin, 1)
         print('\n|| SUCCESS ||\nSuccessfully written to DMEM Binary code file...')
         f_desbin.close()
 
