@@ -123,12 +123,59 @@ def printdbg(s):
 
 # Function to print welcome message
 def print_welcome():
-    print('+===================================+')
-    print('|      Chipmunk Logic (TM) 2024     |')
-    print('+===================================+')
-    print('|~~~~~ RISC-V RV32I Assembler ~~~~~~|')
-    print('|/////// O P E N S O U R C E ///////|')
-    print('+===================================+')
+    print('')    
+    print("/////////////////////////////////////////////////////")
+    #print("=====================================================")
+    print("                       ______                   ")
+    print("     ____  ____ ______/ ____/___ __________ ___  TM")
+    print("    / __ \/ __ `/ ___/___ \/ __ `/ ___/ __ `__ \\")
+    print("   / /_/ / /_/ / /  ____/ / /_/ (__  ) / / / / /")
+    print("  / .___/\__, /_/  /_____/\__,_/____/_/ /_/ /_/ ")
+    print(" /_/       /_/                                  ") 
+    print("")
+    print("                  - RV32I Assembler for RISC-V CPUs")                    
+    print("=====================================================") 
+    print('')
+    print(' OPEN-SOURCE licensed')
+    print('')
+    print(" Chipmunk Logic (TM) 2024")    
+    print(" Visit us: chipmunklogic.com")
+    print('')
+    print("=====================================================")
+    print("/////////////////////////////////////////////////////")
+    print('')
+
+
+# Function to print PASS
+def print_pass(): 
+    print('') 
+    print("==========================================")    
+    print("'########:::::'###:::::'######:::'######::")
+    print("'##.... ##:::'## ##:::'##... ##:'##... ##:")
+    print("'##:::: ##::'##:. ##:: ##:::..:: ##:::..::")
+    print("'########::'##:::. ##:. ######::. ######::")
+    print("'##.....::: #########::..... ##::..... ##:")
+    print("'##:::::::: ##.... ##:'##::: ##:'##::: ##:")
+    print("'##:::::::: ##:::: ##:. ######::. ######::")
+    print("..:::::::::..:::::..:::......::::......:::")
+    print("==========================================") 
+    print('')                                                   
+                                                                                                        
+
+# Function to print FAIL
+def print_fail(): 
+    print('')
+    print("=====================================") 
+    print("'########::::'###::::'####:'##:::::::")
+    print("'##.....::::'## ##:::. ##:: ##:::::::")
+    print("'##::::::::'##:. ##::: ##:: ##:::::::")
+    print("'######:::'##:::. ##:: ##:: ##:::::::")
+    print("'##...:::: #########:: ##:: ##:::::::")
+    print("'##::::::: ##.... ##:: ##:: ##:::::::")
+    print("'##::::::: ##:::: ##:'####: ########:")
+    print("..::::::::..:::::..::....::........::")  
+    print("=====================================")                                                                            
+    print('')   
 
 
 # Function to dump .bin file
@@ -227,6 +274,7 @@ def validate_assembly(file_handler):
         if line.startswith(".section .text"):
             if text_section_found:
                 print("| ERROR: Multiple occurrences of .section .text found.")
+                print_fail()
                 exit(1)
             text_section_found = True
             text_section_position = i
@@ -249,6 +297,7 @@ def validate_assembly(file_handler):
                     org_parts = next_line.split()
                     if len(org_parts) != 2 or not (org_parts[1].startswith("0x") or org_parts[1].startswith("0X")):
                         print("| ERROR: Invalid format for .org directive in .section .text, only Hex supported!")
+                        print_fail()
                         exit(1)
 
                     addr_str = org_parts[1]
@@ -265,22 +314,26 @@ def validate_assembly(file_handler):
 
                     except ValueError:
                         print("| ERROR: Invalid .org address format in .section .text")
+                        print_fail()
                         exit(1)
 
                     org_found = True
                     break
                 else:
                     print("| ERROR: .org directive missing after .section .text")
+                    print_fail()
                     exit(1)
 
             if not org_found:
                 print("| ERROR: .org directive missing after .section .text")
+                print_fail()
                 exit(1)
 
         # Parse .data
         elif line.startswith(".section .data"):
             if data_section_found:
                 print("| ERROR: Multiple occurrences of .section .data found!")
+                print_fail()
                 exit(1)
             data_section_found = True
             data_section_position = i
@@ -303,6 +356,7 @@ def validate_assembly(file_handler):
                     org_parts = next_line.split()
                     if len(org_parts) != 2 or not (org_parts[1].startswith("0x") or org_parts[1].startswith("0X")):
                         print("| ERROR: Invalid format for .org directive in .section .data, , only Hex supported!")
+                        print_fail()
                         exit(1)
 
                     addr_str = org_parts[1]
@@ -322,16 +376,19 @@ def validate_assembly(file_handler):
 
                     except ValueError:
                         print("| ERROR: Invalid .org address format in .section .data")
+                        print_fail()
                         exit(1)
 
                     org_found = True
                     break
                 else:
                     print("| ERROR: .org directive missing after .section .data")
+                    print_fail()
                     exit(1)
 
             if not org_found:
                 print("| ERROR: .org directive missing after .section .data")
+                print_fail()
                 exit(1)
 
         i += 1
@@ -339,10 +396,12 @@ def validate_assembly(file_handler):
     # Check if .data section is defined before .text section
     if data_section_found and text_section_found and data_section_position > text_section_position:
         print("| ERROR: .section .data must be defined before .section .text")
+        print_fail()
         exit(1)
     # Check if .text section exists at all!
     if not text_section_found:
         print("| ERROR: Missing .section .text")
+        print_fail()
         exit(1)
 
     print("\n| INFO : Assembly code file validation successful!!\n")
@@ -719,14 +778,17 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
             # Ensure the label does not contain whitespace
             if ' ' in label:
                 print(f"| ERROR: Line {i + 1}: The label '{label}' is invalid due to spaces!")
+                print_fail()
                 exit(1)
 
             # Check if the label already exists in the list
             if label in dlabel_list:
                 print(f"| ERROR: Line {i + 1}: The label '{label}' has multiple definitions!")
+                print_fail()
                 exit(1)
             elif not is_validname_label(label):
                 print(f"| ERROR: Line {i + 1}: The label '{label}' has naming violations!")
+                print_fail()
                 exit(1)
 
             # Valid label, hence update the current label
@@ -749,14 +811,17 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
             directive, _, argument = stripped_line.partition(' ')
             if directive not in valid_directives:
                 print(f"| ERROR: Line {i + 1}: The directive '{directive}' is invalid!")
+                print_fail()
                 exit(1)
 
             if not argument:
                 print(f"| ERROR: Line {i + 1}: No argument provided for the directive '{directive}'!")
+                print_fail()
                 exit(1)
         else:
             # No space between directive and argument
             print(f"| ERROR: Line {i + 1}: No argument provided for the directive '{stripped_line}'!")
+            print_fail()
             exit(1)
 
         # Validate the argument based on the directive
@@ -764,6 +829,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         if directive == ".p2align" and is_start_of_label:
             if not is_valid_align_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .p2align directive!")
+                print_fail()
                 exit(1)
             align_bound_override = 2**int(argument, 0)
             #print("alignment override active = ", align_bound_override, "bytes")#dbg
@@ -782,6 +848,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".zero":
             if not is_valid_zero_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .zero directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             is_start_of_label = False
@@ -800,6 +867,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".string":
             if not is_valid_string_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .string directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             is_start_of_label = False
@@ -817,6 +885,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".ascii":
             if not is_valid_ascii_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .ascii directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             is_start_of_label = False
@@ -837,6 +906,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".byte":
             if not is_valid_byte_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .byte directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             is_start_of_label = False
@@ -855,6 +925,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".hword":
             if not is_valid_hword_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .hword directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             if is_start_of_label:
@@ -881,6 +952,7 @@ def define_dlabel(code_text, dlabel_list, dlabel_addr_list, dlabelcnt):
         elif directive == ".word":
             if not is_valid_word_argument(argument):
                 print(f"| ERROR: Line {i + 1}: Invalid argument for .word directive!")
+                print_fail()
                 exit(1)
             # {Zero padding, data} size calculation
             if is_start_of_label:
@@ -1100,12 +1172,15 @@ def define_label(baseaddr, line, instrcnt, exp_instrcnt, label_list, label_addr_
         label = line.split(':')[0]
         if label in label_list:
             print(f"| ERROR: The label '{label}' has multiple definitions!")
+            print_fail()
             exit(1)
         elif label in dlabel_list:
             print(f"| ERROR: The label '{label}' has multiple definitions!")
+            print_fail()
             exit(1)
         elif not is_validname_label(label):
             print(f"| ERROR: The label '{label}' has naming violations!")
+            print_fail()
             exit(1)
         else:
             label_list.append(label)
@@ -1114,12 +1189,15 @@ def define_label(baseaddr, line, instrcnt, exp_instrcnt, label_list, label_addr_
         label = line.split(':')[0]
         if label in label_list:
             print(f"| ERROR: The label '{label}' has multiple definitions!")
+            print_fail()
             exit(1)
         elif label in dlabel_list:
             print(f"| ERROR: The label '{label}' has multiple definitions!")
+            print_fail()
             exit(1)
         elif not is_validname_label(label):
             print(f"| ERROR: The label '{label}' has naming violations!")
+            print_fail()
             exit(1)
         else:
             label_list.append(label)
@@ -2106,11 +2184,13 @@ def write_str2dmem (argstr):
                 else:
                     # Trailing backslash is invalid
                     print('| FATAL: Error in parsing string and writing to dmem binary data!')
+                    print_fail()
                     exit(2)
                     continue
             else:
                 # Trailing backslash is invalid
                 print('| FATAL: Error in parsing string and writing to dmem binary data!')
+                print_fail()
                 exit(2)
         else:
             # Any non-escape character is allowed
@@ -2223,6 +2303,7 @@ try:
     print("\n| INFO : Assembly code source file opened successfully...\n")
 except:
     print("| FATAL: Assembly code source file cannot be opened! Please check the path/permissions...")
+    print_fail()
     exit(1)
 
 # ------------------------- Validator --------------------------- #
@@ -2404,7 +2485,7 @@ if error_flag[0] == 0:
         f_desbin = open(f_des_path_imem_bin, "wb")
         imem_bytecnt = instrcnt[0] * 4
         write2bin(imem_bytecnt, baseaddr, imem_binary_data, f_desbin, 0)
-        print('\n|| SUCCESS ||\nSuccessfully written to IMEM Binary code file...')
+        print('\n|| SUCCESS ||\nSuccessfully written to IMEM Binary code file...')        
         f_desbin.close()
 
         # Write to Hex text file
@@ -2442,6 +2523,7 @@ if error_flag[0] == 0:
         print('\n|| BINARY GENERATOR SUMMARY ||')
         print("IMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}".format(imem_bytecnt, baseaddr))
         print("DMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}\n".format(dmem_bytecnt[0], data_baseaddr[0]))
+        print_pass()
     except:
         print('| FATAL: Unable to create Binary/Hex code file! Please check the path/permissions...')
 else:
@@ -2449,6 +2531,7 @@ else:
     print('Total no. of instructions parsed      = ', instrcnt[0])
     print('Total no. of instructions with ERRORS = ', error_cnt[0])
     print('\n|| FAIL ||\nFailed to parse the assembly code due to errors...')
+    print_fail()
     exit(2)
 
 
