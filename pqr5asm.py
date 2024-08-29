@@ -2483,7 +2483,7 @@ if error_flag[0] == 0:
 
         # Write to .bin file
         f_desbin = open(f_des_path_imem_bin, "wb")
-        imem_bytecnt = instrcnt[0] * 4
+        imem_bytecnt = exp_instrcnt[0] * 4
         write2bin(imem_bytecnt, baseaddr, imem_binary_data, f_desbin, 0)
         print('\n|| SUCCESS ||\nSuccessfully written to IMEM Binary code file...')        
         f_desbin.close()
@@ -2521,8 +2521,8 @@ if error_flag[0] == 0:
         print('\n|| SUCCESS ||\nSuccessfully written to DMEM Hex code file...')
         f_des.close()
         print('\n|| BINARY GENERATOR SUMMARY ||')
-        print("IMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}".format(imem_bytecnt, baseaddr))
-        print("DMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}\n".format(dmem_bytecnt[0], data_baseaddr[0]))
+        print("IMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}".format(imem_bytecnt+16, baseaddr))
+        print("DMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}\n".format(dmem_bytecnt[0]+16, data_baseaddr[0]))
         print_pass()
     except:
         print('| FATAL: Unable to create Binary/Hex code file! Please check the path/permissions...')
