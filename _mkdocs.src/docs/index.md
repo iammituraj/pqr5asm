@@ -2,7 +2,7 @@
 
 `pqr5asm` is an assembler which translates RISC-V assembly to binary/hex code.
 
-| Field          | Value                                                                     |
+|       |                                                                      |
 |----------------|----------------------------------------------------------------------------|
 | ISA compliance | RV32IM (User-Level ISA v2.2) — 45 base instructions + pseudo/custom instructions |
 | Input          | Assembly program with `.s` extension                                     |

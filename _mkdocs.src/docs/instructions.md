@@ -73,9 +73,6 @@
 
 ## Multiply/divide instructions (RV32M)
 
-!!! info "New since v1.1.0"
-    These 8 instructions were added on top of the RV32I base — see [Changelog](changelog.md). They reuse the R-type encoding (same layout as `ADD`/`SUB`/etc. above), tagged with `funct7 = 0000001`.
-
 | No. | Instruction | Syntax | Description |
 |-----|-------------|--------|--------------|
 | 38 | `MUL` | `MUL rd, rs1, rs2` | **Multiply.** `rd = (rs1 * rs2)[31:0]` — lower 32 bits of the product. |
