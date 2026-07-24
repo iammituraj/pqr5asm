@@ -1,6 +1,6 @@
 # pqr5asm
-PQR5ASM is a RISC-V Assembler compliant with RV32I. The tool translates RV32I Assembly to Binary/Hex code.
-It supports all 37 base instructions and a set of 16 pseudo instructions.
+PQR5ASM is a RISC-V Assembler compliant with RV32IM. The tool translates RV32IM Assembly to Binary/Hex code.
+It supports all 45 base instructions and a set of 16 pseudo instructions.
 
 *Please refer to pqr5asm_imanual.pdf for full information.*
 
