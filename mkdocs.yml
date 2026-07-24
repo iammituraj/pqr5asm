@@ -1,0 +1,42 @@
+site_name: PQR5 Assembler
+site_description: RISC-V RV32IM Assembler for RISC-V CPUs
+site_author: Mitu Raj, Chipmunk Logic
+site_url: https://pqr5asm.readthedocs.io
+repo_url: https://github.com/iammituraj/pqr5asm
+repo_name: iammituraj/pqr5asm
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+
+markdown_extensions:
+  - tables
+  - fenced_code
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - General Info: index.md
+  - Registers: registers.md
+  - Instructions: instructions.md
+  - Sections in the program: sections.md
+  - Binary/Hex file format: binary-format.md
+  - Changelog: changelog.md
