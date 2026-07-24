@@ -103,5 +103,5 @@ python pqr5asm.py -file=<assembly source file path> -pcrel
 - Pre-processing: decode all labels and symbols and resolve all addresses → resolve all assembly functions and immediates → final formatting →
 - Parse instructions line-by-line → dump binary code files on successful compilation.
 
-!!! note "This manual is generated from source, not a static PDF"
-    Earlier versions of this manual shipped only as `pqr5asm_imanual.pdf`. That file is a snapshot — if the assembler changes and nobody remembers to re-export the PDF, the docs quietly go stale (this happened: the PDF still says RV32I / 37 instructions after RV32M support was added). These pages are markdown living next to the source, built fresh on every push — see [Changelog](changelog.md) for what's new.
+!!! note "Attention"
+    Earlier versions of this manual shipped only as `pqr5asm_imanual.pdf` — see [Changelog](changelog.md) for what's new.

@@ -6,8 +6,8 @@ build:
     python: "3.12"
 
 mkdocs:
-  configuration: .mkdocs.src/mkdocs.yml
+  configuration: _mkdocs.src/mkdocs.yml
 
 python:
   install:
-    - requirements: .mkdocs.src/docs/requirements.txt
+    - requirements: _mkdocs.src/docs/requirements.txt
