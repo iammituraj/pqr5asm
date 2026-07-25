@@ -1,4 +1,4 @@
-site_name: PQR5 Assembler
+site_name: PQR5 Assembler - User Manual
 site_description: RISC-V RV32IM Assembler for RISC-V CPUs
 site_author: Mitu Raj, Chipmunk Logic
 site_url: https://pqr5asm.readthedocs.io
@@ -34,7 +34,7 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - General Info: index.md
+  - Overview: index.md
   - Registers: registers.md
   - Instructions: instructions.md
   - Sections in the program: sections.md

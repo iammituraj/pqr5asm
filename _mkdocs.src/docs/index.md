@@ -1,4 +1,4 @@
-# General Info
+# Overview
 
 `pqr5asm` is an assembler which translates RISC-V assembly to binary/hex code.
 
