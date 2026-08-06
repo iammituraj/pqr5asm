@@ -13,7 +13,7 @@ The following example shows how an instruction binary file, `sample_imem.bin`, a
 // sample_imem.bin
 <0xC0><0xC0><0xC0><0xC0>   # Pre-amble marks the start
 <0x00><0x00><0x00><0x28>   # Program size = (no. of instr, N x 4) bytes
-<baB3><baB2><baB1><baB0>   # Base address of the program byte[3] to [0]
+<baB3><baB2><baB1><baB0>   # IRAM starting address byte[3] to [0]
 <inB3><inB2><inB1><inB0>   # Instruction-1 byte[3] to [0]
 <inB3><inB2><inB1><inB0>   # Instruction-2 byte[3] to [0]
 ….
@@ -24,7 +24,7 @@ The following example shows how an instruction binary file, `sample_imem.bin`, a
 // sample_dmem.bin
 <0xD0><0xD0><0xD0><0xD0>   # Pre-amble marks the start
 <0x00><0x00><0x00><0x28>   # Data size = (no. of words, N x 4) bytes
-<baB3><baB2><baB1><baB0>   # Base address of the data section byte[3] to [0]
+<baB3><baB2><baB1><baB0>   # DRAM starting address byte[3] to [0]
 <wdB3><wdB2><wdB1><wdB0>   # Word-1 byte[3] to [0]
 <wdB3><wdB2><wdB1><wdB0>   # Word-2 byte[3] to [0]
 ….
@@ -32,3 +32,6 @@ The following example shows how an instruction binary file, `sample_imem.bin`, a
 <wdB3><wdB2><wdB1><wdB0>   # Word-N byte[3] to [0]
 <0xE0><0xE0><0xE0><0xE0>   # Post-amble marks the end
 ```
+
+!!! note
+    IRAM/DRAM starting address is always `0x00000000`.
