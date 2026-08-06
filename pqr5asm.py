@@ -2440,7 +2440,7 @@ data_baseaddr = [0]  # Base address for .data section
 dptr = [0]
 pc = [0]
 
-# Starting address of binary loading is hardcoded as 0x0
+# Offset address of binary loading is hardcoded as 0x0
 iram_offset = 0x00000000
 dram_offset = 0x00000000
 baseaddr = validate_assembly(f_src)
@@ -2665,8 +2665,8 @@ if error_flag[0] == 0:
         print('\n|| SUCCESS ||\nSuccessfully written to DMEM Hex code file...')
         f_des.close()
         print('\n|| BINARY GENERATOR SUMMARY ||')
-        print("IMEM binary size = {:>8} bytes @starting address = 0x{:08x}".format(imem_bytecnt+16, iram_offset))
-        print("DMEM binary size = {:>8} bytes @starting address = 0x{:08x}\n".format(dmem_bytecnt[0]+16, dram_offset))
+        print("IMEM binary size = {:>8} bytes @offset address = 0x{:08x}".format(imem_bytecnt+16, iram_offset))
+        print("DMEM binary size = {:>8} bytes @offset address = 0x{:08x}\n".format(dmem_bytecnt[0]+16, dram_offset))
         print_pass()
     except:
         print('| FATAL: Unable to create Binary/Hex code file! Please check the path/permissions...')
