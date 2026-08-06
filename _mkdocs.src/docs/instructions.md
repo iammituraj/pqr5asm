@@ -99,7 +99,7 @@
 | 54 | `BEQZ` | `BEQZ rs1, label`<br>= `BEQ rs1, x0, label` | **Branch Equal to Zero.** Jump to `label` if `rs1 == 0`, else no-op. |
 | 55 | `BNEZ` | `BNEZ rs1, label`<br>= `BNE rs1, x0, label` | **Branch Not Equal to Zero.** Jump to `label` if `rs1 != 0`, else no-op. |
 | 56 | `LI` | `LI rd, imm` **†**<br>= `LUI rd, U` + `ADDI rd, L` | **Load Immediate** (32-bit immediate). `rd = imm` |
-| 57 | `LA` | `LA rd, label/symbol` **†**<br>= `LUI rd, U` + `ADDI rd, L`<br>with `-pcrel`:<br>= `AUIPC rd, UA` + `ADDI rd, LA` | **Load Address.** `rd = address(label)`. If the reference is a data symbol, `LUI` is used even if `-pcrel` is set. If the address is encoded directly, it is considered PC-relative if `-pcrel` is set. |
+| 57 | `LA` | `LA rd, label/symbol` **†**<br>= `LUI rd, U` + `ADDI rd, L`<br>with `-pcrel`:<br>= `AUIPC rd, UA` + `ADDI rd, LA` | **Load Address.** `rd = address(label)`. `AUIPC` is used whenever `-pcrel` is set, whether the reference is a `.text` label or a `.data` symbol. |
 | 58 | `JA` | `JA rd, label` **†**<br>= `LUI rd, U` + `ADDI rd, L` + `JALR x0, rd, 0`<br>with `-pcrel`:<br>= `AUIPC rd, UA` + `ADDI rd, LA` + `JALR x0, rd, 0` | **Load and Jump to Address** (long jump). `rd = address(label)`. |
 | 59 | `JR` | `JR rs1`<br>= `JALR x0, rs1, 0` | **Jump Register Address.** Jump to address = `rs1`. |
 | 60 | `CALL` | `CALL label`<br>= `AUIPC ra, %UA` + `JALR ra, ra, %UL` | **Call subroutine.** Stores the return address in `ra` and jumps to `address(label)`. |

@@ -32,7 +32,7 @@ student:               # Data symbol student, addr = 0x40000000
 <instructions>
 ```
 
-If the assembler is configured to generate a relocatable program binary, the text segment can be loaded to a different base address than the one set by the linker directive.
+If the assembler is configured to generate a relocatable program binary, the text and data segments can be loaded to a different base address than the one set by the linker directive, as long as both segments are relocated together by the same offset.
 
 The directive `.p2align <alignment>` is used to force the alignment of a data symbol to `2^(alignment)` bytes. This is useful to make the memory access efficient by making the data align with the native alignment of the processor. This directive should be defined immediately following the symbol declaration. For eg:
 

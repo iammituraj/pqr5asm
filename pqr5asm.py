@@ -77,7 +77,7 @@
 #                       -pcrel = Applying this flag uses PC relative addressing for instructions like LA, JA
 #                                This flag hence directs assembler and linker to generate relocatable binary code.
 #                                If this flag is not used, absolute address is loaded by the instructions.
-#                                The generate binary code may not be relocatable.
+#                                The generate binary code (Instruction & Data) may not be relocatable.
 #                       Binary/Hex code files are generated in same path
 #                       If no arguments provided, source file = "./sample.s"
 #
@@ -1255,14 +1255,14 @@ def imm2bin(immval, linenum, errsts, jbflag, laflag, jaflag, callflag):
                 return immval_bin
             # Label --> translation --> la instruction
             elif laflag == 1 and is_valid_label(immval.rstrip(':')):
-                if (pcrel_flag is True) and is_text_label[0]:  # PC relative address for la instruction
+                if pcrel_flag is True:  # PC relative address for la instruction
                     addr_of_label_int = addr_of_label(immval, labelid)
                     pc_reltv_addr_int = addr_of_label_int - pc[0]  # PC relative addr
                     if pc_reltv_addr_int < 0:
                         pc_reltv_addr_int = 0xffffffff + 1 + pc_reltv_addr_int  # PC relative addr 2's complement
                     immval_bin = '{:032b}'.format(pc_reltv_addr_int, base=16)  # PC relative addr signed 32-bit
                     return immval_bin
-                else:    # Absolute address for la instruction if referring to data symbol or pcrel_flag not set
+                else:    # Absolute address for la instruction if pcrel_flag not set
                     addr_of_label_int = addr_of_label(immval, labelid)
                     abs_addr_int = addr_of_label_int
                     immval_bin = '{:032b}'.format(abs_addr_int, base=16)  # Absolute addr signed 32-bit
@@ -2205,10 +2205,10 @@ def asm2bin(pc, line, linenum, error_flag, error_cnt, instr_bin):
         funct3 = '000'
         instr_bin.append(imm_bin_11_0 + rs1_bin + funct3 + rdt_bin + opcode_binarr[1])  # Write ADDI instruction
     elif instr_error_flag == 0 and ps_la_type_flag:  # = LUI/AUIPC + ADDI
-        if (pcrel_flag is True) and is_text_label[0]:
+        if pcrel_flag is True:
             opcode0 = opcode_binarr[0]  # No need to modify opcode, AUIPC
         else:
-            opcode0 = '0110111'  # Modify opcode to LUI if referring to data symbol or pcrel_flag not set or immediate address
+            opcode0 = '0110111'  # Modify opcode to LUI if pcrel_flag not set or immediate address
         # LUI or AUIPC
         if imm_bin[20] == '0':
             imm_bin_31_12 = imm_bin[0:20]  # imm[31:12]
