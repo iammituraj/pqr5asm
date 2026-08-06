@@ -2439,6 +2439,10 @@ baseaddr = 0  # Base address for .text section
 data_baseaddr = [0]  # Base address for .data section
 dptr = [0]
 pc = [0]
+
+# Starting address of binary loading is hardcoded as 0x0
+iram_offset = 0x00000000
+dram_offset = 0x00000000
 baseaddr = validate_assembly(f_src)
 dptr[0] = data_baseaddr[0]  # Data pointer points to base addr of .data
 pc[0] = baseaddr  # PC points to base addr of .text
@@ -2624,7 +2628,7 @@ if error_flag[0] == 0:
         # Write to .bin file
         f_desbin = open(f_des_path_imem_bin, "wb")
         imem_bytecnt = exp_instrcnt[0] * 4
-        write2bin(imem_bytecnt, baseaddr, imem_binary_data, f_desbin, 0)
+        write2bin(imem_bytecnt, iram_offset, imem_binary_data, f_desbin, 0)
         print('\n|| SUCCESS ||\nSuccessfully written to IMEM Binary code file...')        
         f_desbin.close()
 
@@ -2648,7 +2652,7 @@ if error_flag[0] == 0:
         # Write to .bin file
         f_desbin = open(f_des_path_dmem_bin, "wb")
         dmem_binary_data_temp = dmem_binary_data.copy()
-        write2bin(dmem_bytecnt[0], data_baseaddr[0], dmem_binary_data_temp, f_desbin, 1)
+        write2bin(dmem_bytecnt[0], dram_offset, dmem_binary_data_temp, f_desbin, 1)
         print('\n|| SUCCESS ||\nSuccessfully written to DMEM Binary code file...')
         f_desbin.close()
 
@@ -2661,8 +2665,8 @@ if error_flag[0] == 0:
         print('\n|| SUCCESS ||\nSuccessfully written to DMEM Hex code file...')
         f_des.close()
         print('\n|| BINARY GENERATOR SUMMARY ||')
-        print("IMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}".format(imem_bytecnt+16, baseaddr))
-        print("DMEM binary size = {:>8} bytes @baseaddr = 0x{:08x}\n".format(dmem_bytecnt[0]+16, data_baseaddr[0]))
+        print("IMEM binary size = {:>8} bytes @starting address = 0x{:08x}".format(imem_bytecnt+16, iram_offset))
+        print("DMEM binary size = {:>8} bytes @starting address = 0x{:08x}\n".format(dmem_bytecnt[0]+16, dram_offset))
         print_pass()
     except:
         print('| FATAL: Unable to create Binary/Hex code file! Please check the path/permissions...')
